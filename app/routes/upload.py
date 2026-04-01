@@ -1,5 +1,7 @@
 from fastapi import APIRouter, UploadFile, File
 from typing import List
+from typing import Annotated
+from pydantic import BaseModel
 
 from app.utils.file_handler import save_file
 from app.services.parser import extract_text_from_pdf
@@ -14,24 +16,20 @@ DATABASE = []
 JD_DATA = {}
 
 @router.post("/upload-resumes")
-async def upload_resumes(files: List[UploadFile] = File(...)):
+async def upload_resumes(
+    uploaded_files: List[UploadFile] = File(...)
+):
     results = []
 
-    for file in files:
-        # 1. Save file
+    for file in uploaded_files:
         file_path = save_file(file)
-
-        # 2. Extract text
         text = extract_text_from_pdf(file_path)
-
-        # 3. Generate embedding
         embedding = get_embedding(text)
 
-        # 4. Store
         candidate_data = {
             "filename": file.filename,
             "text": text,
-            "embedding": embedding.tolist()  # convert numpy → list
+            "embedding": embedding.tolist()
         }
 
         DATABASE.append(candidate_data)
@@ -46,9 +44,12 @@ async def upload_resumes(files: List[UploadFile] = File(...)):
         "files": results
     }
 
+class JDRequest(BaseModel):
+    jd: str
+
 @router.post("/upload-jd")
-async def upload_jd(jd: str):
-    from app.services.embedding import get_embedding
+async def upload_jd(request: JDRequest):
+    jd = request.jd
 
     embedding = get_embedding(jd)
 
