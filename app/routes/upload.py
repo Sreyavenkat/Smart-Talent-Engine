@@ -10,6 +10,7 @@ from app.utils.similarity import cosine_similarity
 from app.services.experience import extract_experience
 from app.utils.skill_extractor import extract_skills
 from app.utils.scoring import calculate_final_score 
+from app.utils.summary_generator import generate_summary
 
 router = APIRouter()
 
@@ -88,12 +89,14 @@ def rank_candidates():
         #score = cosine_similarity(candidate["embedding"], jd_embedding)
 
         score = calculate_final_score(candidate, JD_DATA)
+        summary = generate_summary(candidate, JD_DATA)
 
         ranked.append({
             "filename": candidate["filename"],
             "score": score,
             "skills": candidate["skills"],
-            "experience": candidate["experience"]  
+            "experience": candidate["experience"],
+            "summary": summary  
         })
 
     # sort descending
