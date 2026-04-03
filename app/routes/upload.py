@@ -7,6 +7,9 @@ from app.utils.file_handler import save_file
 from app.services.parser import extract_text_from_pdf
 from app.services.embedding import get_embedding
 from app.utils.similarity import cosine_similarity
+from app.services.experience import extract_experience
+from app.utils.skill_extractor import extract_skills
+from app.utils.scoring import calculate_final_score 
 
 router = APIRouter()
 
@@ -25,11 +28,15 @@ async def upload_resumes(
         file_path = save_file(file)
         text = extract_text_from_pdf(file_path)
         embedding = get_embedding(text)
+        experience = extract_experience(text)
+        skills = extract_skills(text)
 
         candidate_data = {
             "filename": file.filename,
             "text": text,
-            "embedding": embedding.tolist()
+            "embedding": embedding.tolist(),
+            "experience" : experience,
+            "skills" : skills
         }
 
         DATABASE.append(candidate_data)
@@ -38,6 +45,8 @@ async def upload_resumes(
             "filename": file.filename,
             "status": "processed"
         })
+
+    #print(DATABASE)    
 
     return {
         "message": "Resumes processed successfully",
@@ -53,11 +62,15 @@ async def upload_jd(request: JDRequest):
 
     embedding = get_embedding(jd)
 
+    jd_skills = extract_skills(jd)
+
     JD_DATA["text"] = jd
     JD_DATA["embedding"] = embedding.tolist()
+    JD_DATA["skills"] = jd_skills
 
     return {
-        "message": "Job Description processed successfully"
+        "message": "Job Description processed successfully",
+        "extracted_skills": jd_skills
     }
 
 
@@ -72,11 +85,15 @@ def rank_candidates():
     ranked = []
 
     for candidate in DATABASE:
-        score = cosine_similarity(candidate["embedding"], jd_embedding)
+        #score = cosine_similarity(candidate["embedding"], jd_embedding)
+
+        score = calculate_final_score(candidate, JD_DATA)
 
         ranked.append({
             "filename": candidate["filename"],
-            "score": round(float(score) * 100, 2)
+            "score": score,
+            "skills": candidate["skills"],
+            "experience": candidate["experience"]  
         })
 
     # sort descending
