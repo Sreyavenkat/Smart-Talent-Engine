@@ -11,6 +11,7 @@ from app.services.experience import extract_experience
 from app.utils.skill_extractor import extract_skills
 from app.utils.scoring import calculate_final_score 
 from app.utils.summary_generator import generate_summary
+from app.services.parser import extract_text
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ async def upload_resumes(
 
     for file in uploaded_files:
         file_path = save_file(file)
-        text = extract_text_from_pdf(file_path)
+        text = extract_text(file_path) 
         embedding = get_embedding(text)
         experience = extract_experience(text)
         skills = extract_skills(text)
