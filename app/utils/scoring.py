@@ -23,7 +23,8 @@ def calculate_final_score(candidate, jd):
     skill_score = skill_match_score(candidate["skills"], jd["skills"])
 
     # experience score (normalize roughly)
-    exp_score = min(candidate["experience"] / 5, 1)  # cap at 5 years
+    exp_score = min(candidate["experience"], 10) / 10     #Experience(yr)   1    2    5    10 
+                                                          #Score            0.1  0.2  0.5  1.0  
 
     # FINAL WEIGHTED SCORE
     final_score = (

@@ -20,38 +20,77 @@ DATABASE = []
 
 JD_DATA = {}
 
+from datetime import datetime
+
+BATCHES = {}
+
 @router.post("/upload-resumes")
 async def upload_resumes(
     uploaded_files: List[UploadFile] = File(...)
 ):
     results = []
 
+    # create batch id
+    batch_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    BATCHES[batch_id] = []
+
     for file in uploaded_files:
-        file_path = save_file(file)
-        text = extract_text(file_path) 
-        embedding = get_embedding(text)
-        experience = extract_experience(text)
-        skills = extract_skills(text)
+        try:
+            filename = file.filename
 
-        candidate_data = {
-            "filename": file.filename,
-            "text": text,
-            "embedding": embedding.tolist(),
-            "experience" : experience,
-            "skills" : skills
-        }
+            # Duplicate check
+            existing_files = [r["filename"] for r in DATABASE]
+            if filename in existing_files:
+                raise ValueError("Duplicate file already uploaded")
 
-        DATABASE.append(candidate_data)
+            # Save file
+            file_path = save_file(file)
 
-        results.append({
-            "filename": file.filename,
-            "status": "processed"
-        })
+            # File type validation
+            if not filename.endswith((".pdf", ".docx", ".jpg", ".jpeg", ".png")):
+                raise ValueError("Unsupported file type")
 
-    #print(DATABASE)    
+            # Extract text
+            text = extract_text(file_path)
+
+            if not text or text.strip() == "":
+                raise ValueError("Empty or unreadable file")
+
+            # Processing
+            embedding = get_embedding(text)
+            experience = extract_experience(text)
+            skills = extract_skills(text)
+
+            candidate_data = {
+                "filename": filename,
+                "text": text,
+                "embedding": embedding.tolist(),
+                "experience": experience,
+                "skills": skills
+            }
+
+            # Store in main DB
+            DATABASE.append(candidate_data)
+
+            # Store in batch
+            BATCHES[batch_id].append(candidate_data)
+
+            results.append({
+                "filename": filename,
+                "status": "processed"
+            })
+
+        except Exception as e:
+            results.append({
+                "filename": file.filename,
+                "status": "failed",
+                "error": str(e)
+            })
 
     return {
         "message": "Resumes processed successfully",
+        "batch_id": batch_id,
         "files": results
     }
 
@@ -102,6 +141,12 @@ def rank_candidates():
 
     # sort descending
     ranked = sorted(ranked, key=lambda x: x["score"], reverse=True)
+
+    for i, candidate in enumerate(ranked):
+        if i < 5:
+            candidate["summary"] = generate_summary(candidate)
+        else:
+            candidate["summary"] = ""
 
     return {
         "ranked_candidates": ranked
