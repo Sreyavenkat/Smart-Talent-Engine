@@ -60,14 +60,16 @@ async def upload_resumes(
             # Processing
             embedding = get_embedding(text)
             experience = extract_experience(text)
-            skills = extract_skills(text)
+            skills_data = extract_skills(text)
+            skills = skills_data["all_skills"]
 
             candidate_data = {
                 "filename": filename,
                 "text": text,
                 "embedding": embedding.tolist(),
                 "experience": experience,
-                "skills": skills
+                "skills": skills,
+                "skill_breakdown" : skills_data
             }
 
             # Store in main DB
@@ -103,7 +105,8 @@ async def upload_jd(request: JDRequest):
 
     embedding = get_embedding(jd)
 
-    jd_skills = extract_skills(jd)
+    jd_skills_data = extract_skills(jd)
+    jd_skills = jd_skills_data["all_skills"] 
 
     JD_DATA["text"] = jd
     JD_DATA["embedding"] = embedding.tolist()
@@ -144,7 +147,7 @@ def rank_candidates():
 
     for i, candidate in enumerate(ranked):
         if i < 5:
-            candidate["summary"] = generate_summary(candidate)
+            candidate["summary"] = generate_summary(candidate , JD_DATA)
         else:
             candidate["summary"] = ""
 
