@@ -22,6 +22,7 @@ export default function Results() {
   }, []);
 
   return (
+  <div className="page">
     <div className="results-container">
       <h1>Ranked Candidates</h1>
 
@@ -30,10 +31,20 @@ export default function Results() {
       ) : (
         <div className="results-grid">
           {candidates.map((c, index) => (
-            <div key={index} className="result-card">
+            <div
+               key={index}
+               className={`result-card ${index === 0 ? "top-card" : ""}`}
+            >
+              <h3>#{index + 1} Ranked</h3>
               <h2>{c.filename}</h2>
 
-              <div className="score">{c.score}%</div>
+              <div className="score-bar">
+              <div
+                className="score-fill"
+                style={{ width: `${c.score}%` }}
+                ></div>
+              </div>
+              <p>{c.score}% Match</p>
 
               <p><strong>Experience:</strong> {c.experience} years</p>
 
@@ -49,6 +60,7 @@ export default function Results() {
           ))}
         </div>
       )}
+    </div>
     </div>
   );
 }
