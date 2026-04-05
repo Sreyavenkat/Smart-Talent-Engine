@@ -1,10 +1,18 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
+import Dashboard from "./pages/Dashboard";
+import Results from "./pages/Results";
+
 function App() {
   return (
-    <div>
-      <h1>Smart Talent Engine 🚀</h1>
-      <p>Frontend is working!</p>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/results" element={<Results />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
