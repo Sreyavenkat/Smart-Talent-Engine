@@ -28,6 +28,7 @@ BATCHES = {}
 async def upload_resumes(
     uploaded_files: List[UploadFile] = File(...)
 ):
+    DATABASE.clear()
     results = []
 
     # create batch id
