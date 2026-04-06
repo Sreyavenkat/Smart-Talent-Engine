@@ -61,7 +61,7 @@ export default function Landing() {
         </div>
         <div className="nav-links">
           <a href="#features">Features</a>
-          <button className="nav-cta" onClick={() => navigate("/dashboard")}>Launch App</button>
+          
         </div>
       </nav>
       <section className="hero">
