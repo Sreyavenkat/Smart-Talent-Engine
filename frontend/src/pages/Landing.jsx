@@ -94,7 +94,7 @@ export default function Landing() {
           </div>
           <div className="stat-divider" />
           <div className="stat-item">
-            <span className="stat-num">1000+</span>
+            <span className="stat-num">100+</span>
             <span className="stat-label">resumes per batch</span>
           </div>
         </div>
