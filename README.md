@@ -108,3 +108,11 @@ npm run dev
    * Extracted skills
    * Experience
    * AI-generated summary
+
+Important Notes
+Ensure Python 3.10 or above is installed
+
+Tesseract OCR must be installed separately for image-based resume parsing:
+
+sudo apt install tesseract-ocr
+If any dependency issues occur, install packages individually as listed above instead of using a single command   
