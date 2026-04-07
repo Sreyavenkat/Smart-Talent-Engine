@@ -3,22 +3,42 @@ from docx import Document
 import pytesseract
 from PIL import Image
 import os
+import fitz  # PyMuPDF
 
 
 # PDF extraction 
 def extract_text_from_pdf(file_path: str) -> str:
-    text = ""
-
     try:
-        with pdfplumber.open(file_path) as pdf:
-            for page in pdf.pages:
-                extracted = page.extract_text()
-                if extracted:
-                    text += extracted + "\n"
-    except Exception as e:
-        print(f"Error parsing PDF: {e}")
+        # Try PyMuPDF first
+        doc = fitz.open(file_path)
+        text = ""
 
-    return text
+        for page in doc:
+            blocks = page.get_text("blocks")
+            blocks = sorted(blocks, key=lambda b: (b[1], b[0]))
+
+            for block in blocks:
+                block_text = block[4].strip()
+                if block_text:
+                    text += " ".join(block_text.split()) + "\n"
+
+        return text
+
+    except Exception as e:
+        print("PyMuPDF failed, falling back to pdfplumber...")
+
+        text = ""
+        try:
+            import pdfplumber
+            with pdfplumber.open(file_path) as pdf:
+                for page in pdf.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text += extracted + "\n"
+        except Exception as e:
+            print(f"Fallback also failed: {e}")
+
+        return text
 
 
 # DOCX extraction
